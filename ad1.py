@@ -12,7 +12,7 @@ from tensorflow import keras
 # NORMAL_CSV = "normal_vibration.csv"
 # ANOMALY_CSV = "anomaly_vibration.csv"
 NORMAL_CSV = "data/plain1.csv"
-ANOMALY_CSV = "data/plain1_anomaly2.csv"
+ANOMALY_CSV = "data/plain1_anomaly.csv"
 
 # Windowing parameters
 WINDOW_SIZE = 50   # how many consecutive points form one sequence
