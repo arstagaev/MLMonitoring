@@ -4,13 +4,17 @@ import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
 import os
+from datetime import datetime
+# Last quite good working prototype
 
 ############################################
 # 1. PARAMETERS
 ############################################
 
-ANOMALY_PATTERN_CSV = "data/plain1_anomaly_short_pattern2.csv"
-TELEMETRY_CSV = "data/plain1_anomaly5_3.impulses_short_peak.csv"
+ANOMALY_PATTERN_CSV = "data_phone/slam_two_peaks_pattern.csv"
+#TELEMETRY_CSV = "data/plain1_anomaly5_3.impulses_short_peak.csv"
+TELEMETRY_CSV = "data_phone/two_slams.csv"
+
 
 WINDOW_SIZE = 50      # Each training window length
 POSITIVE_SAMPLES = 100
@@ -19,7 +23,13 @@ NEGATIVE_SAMPLES = 200
 EPOCHS = 10
 BATCH_SIZE = 32
 
-TFLITE_MODEL_PATH = "pattern_detector.tflite"
+# Get the current date and time
+current_datetime = datetime.now()
+
+# Format the date and time
+formatted_datetime = current_datetime.strftime("%m%d_%H%M%S")
+
+TFLITE_MODEL_PATH = f"tfmodels/model_{formatted_datetime}.tflite"
 
 # For final detection
 ANOMALY_THRESHOLD = 0.75 #0.5  # Probability above this => anomaly
@@ -30,14 +40,18 @@ NORMAL_BAND_MULT = 2.0   # Plot ±2 std around mean in yellow
 ############################################
 
 def load_csv(filename):
-    """
-    Reads CSV with columns [time, value].
-    Returns: (time array, value array)
-    """
     df = pd.read_csv(filename)
+    
+    # Convert time and value columns to float (if they're valid numeric data)
+    df["time"] = pd.to_numeric(df["time"], errors='coerce')
+    df["value"] = pd.to_numeric(df["value"], errors='coerce')
+    
+    # Drop rows that become NaN if there's bad data
+    df.dropna(subset=["time", "value"], inplace=True)
+    
     time = df["time"].values
-    vals = df["value"].values
-    return time, vals
+    values = df["value"].values
+    return time, values
 
 def embed_short_pattern(telemetry, pattern, window_size):
     """
